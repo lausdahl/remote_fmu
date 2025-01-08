@@ -1,0 +1,26 @@
+#Author Kenneth Lausdahl
+include(TargetArch.cmake)
+
+
+function(get_fmi_binary_folder output_var)
+    target_architecture(arch)
+    if (UNIX AND NOT APPLE)
+        set(OS_NAME "linux")
+        if ("${arch}" STREQUAL "amd64" OR "${arch}" STREQUAL "x86_64")
+            set(${output_var} "binaries/${OS_NAME}64" PARENT_SCOPE)
+        else ()
+            set(${output_var} "binaries/${OS_NAME}32" PARENT_SCOPE)
+        endif ()
+    elseif (APPLE)
+        set(OS_NAME "darwin")
+        set(${output_var} "binaries/${OS_NAME}64" PARENT_SCOPE)
+    elseif (WIN32)
+        set(OS_NAME "win")
+        if ("${arch}" STREQUAL "amd64" OR "${arch}" STREQUAL "x86_64")
+            set(${output_var} "binaries/${OS_NAME}64" PARENT_SCOPE)
+        else ()
+            set(${output_var} "binaries/${OS_NAME}32" PARENT_SCOPE)
+        endif ()
+    endif ()
+
+endfunction()

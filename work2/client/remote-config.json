@@ -1,0 +1,5 @@
+{
+  "RemoteConnection": {
+    "url": "tcp://localhost:50051"
+  }
+}

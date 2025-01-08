@@ -36,7 +36,7 @@ add_definitions( -DCUSTOM_Instantiate
         -DCUSTOM_FreeInstance
         -DFMI_COSIMULATION)
 add_executable(client  client.cc custom_client.cpp client_fmi.cxx execution_statistics.cpp establish_remote_connection.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../grpc_fmi_enums.cxx ${PROTO_SRCS} ${GRPC_SRCS})
-target_link_libraries(client fmi2_proto fmi )
+target_link_libraries(client fmi2_proto fmi zmq_client_transport)
 target_precompile_headers(client PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/fmi_metrics.h)
 target_include_directories(client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ ${rapidjson_SOURCE_DIR}/include)
 target_compile_definitions(client PRIVATE -DCOMMUNICATION_STUB_TYPE=Fmi2Service::Stub)
@@ -124,7 +124,7 @@ set(ZIP_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/remote_fmu.zip")
 
 
 add_custom_command(TARGET remote_fmu POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_SOURCE_DIR}/${output_folder}/"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${FOLDER_TO_ZIP}"
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/create_remote_fmu.py ${FOLDER_TO_ZIP}
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:remote_fmu> "${FOLDER_TO_ZIP}/${output_folder}/$<TARGET_FILE_NAME:remote_fmu>"
         COMMENT "Creating binary library for fmu"

@@ -21,7 +21,7 @@ target_link_libraries(fmi2_proto
         gRPC::grpc++
 )
 target_include_directories(fmi2_proto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-
+set_target_properties(fmi2_proto PROPERTIES POSITION_INDEPENDENT_CODE ON)
 #
 # Compile protobuf and grpc files in fmi2 target to cpp
 #

@@ -62,3 +62,4 @@ target_include_directories(fmi PUBLIC ${PROJECT_SOURCE_DIR}
 
 target_link_libraries(fmi zip)
 target_compile_definitions(fmi PRIVATE -DFMI_COSIMULATION)
+set_target_properties(fmi PROPERTIES POSITION_INDEPENDENT_CODE ON)

@@ -380,7 +380,7 @@ with open("work2/grpc_fmi_enums.cxx", "w") as file:
             file.write(f"   switch(status) {{\n")
             for idx, v in enumerate(parser.defs['enums'][enum_name]):
                 file.write(f"     case {rpc_name}::g{v} : return {v};\n")
-            file.write(f"     //default: return fmi2Fatal;\n")
+            file.write(f"     default: throw FmiEnumNotFoundException(\"Could not fund the enum\");\n")
             file.write(f"   }}\n")
             file.write(f"}}\n\n")
 
@@ -390,14 +390,14 @@ with open("work2/grpc_fmi_enums.cxx", "w") as file:
             file.write(f"   switch(status) {{\n")
             for idx, v in enumerate(parser.defs['enums'][enum_name]):
                 file.write(f"     case {v} : return {rpc_name}::g{v};\n")
-            file.write(f"     //default: return {rpc_name}::gfmi2Fatal;\n")
+            file.write(f"     default: throw FmiEnumNotFoundException(\"Could not fund the enum\");\n")
             file.write(f"   }}\n")
             file.write(f"}}\n\n")
 
             if fmi_name=='fmi2Status':
                 signatures.append(f"#define gStatus2fmi2Status {rpc_name}To{fmi_name}\n")
 
-    fmiFunctions = "enum class FmiFunctionNames : int{\n"
+    fmiFunctions = "enum class FmiFunctionNames : char{\n"
     for f in functions:
         fmiFunctions+="\t"+f.name+",\n"
     fmiFunctions+="}\n"
@@ -419,6 +419,14 @@ with open("work2/grpc_fmi_enums.cxx", "w") as file:
         file_h.write('#include "fmi2.grpc.pb.h"\n')
         file_h.write('#include "fmi2Functions.h"\n')
         file_h.write('#include "grpc_fmi_enums.h"\n')
+
+        file_h.write('''class FmiEnumNotFoundException : public std::runtime_error {
+public:
+    FmiEnumNotFoundException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+''')
+
         file_h.write(";\n".join(signatures)+';\n')
         file_h.write("#endif\n")
 
@@ -805,9 +813,10 @@ with open("work2/transport/Fmi2ZmqClientTransport.h", "w") as file:
             std::string serialized_data;
             request.SerializeToString(&serialized_data);
         
-           	zmq::message_t zmq_msg(serialized_data.size()+sizeof(int));
-		memcpy(zmq_msg.data(), &type, sizeof(int));
-		memcpy(static_cast<char*>(zmq_msg.data()) + sizeof(int), serialized_data.data(), serialized_data.size());
+           	zmq::message_t zmq_msg(serialized_data.size()+sizeof(char));
+		    memcpy(zmq_msg.data(), &type, sizeof(char));
+		    memcpy(static_cast<char*>(zmq_msg.data()) + sizeof(char), serialized_data.data(), serialized_data.size());
+		    socket->send(zmq_msg, zmq::send_flags::none);
         
             zmq::message_t zmq_response;
         
@@ -853,7 +862,7 @@ with open("work2/transport/Fmi2ZmqServerTransport.cpp", "w") as file:
     zmq::socket_t socket ( context, zmq::socket_type::rep );
     this->socket = &socket;
     // Connect to a tcp socket
-    socket.bind( "tcp://*:50051" );
+    socket.bind( url.c_str() );
     // Set the socket option to subscribe
    // socket.setsockopt( ZMQ_SUBSCRIBE, "", 0 );
     
@@ -866,17 +875,10 @@ with open("work2/transport/Fmi2ZmqServerTransport.cpp", "w") as file:
         zmq::message_t update;
          // Receive the message and convert to string
         if (socket.recv(update, zmq::recv_flags::none)) {
-       //     int t =*static_cast<int*>(update.data());
-            
-         //   received_any_msg.ParseFromString(std::string(static_cast<char *>(update.data()+sizeof(int)), update.size()-+sizeof(int)));
-           // received_any_msg.ParseFromString(std::string(static_cast<char *>(update.data()), update.size()));
-            //zmq::message_t *reply = nullptr;
-           // dispatch(t,received_any_msg);
-   int t =*static_cast<int*>(update.data());
 
-           // received_any_msg.ParseFromString(std::string(static_cast<char *>(update.data()+sizeof(int)), update.size()-+sizeof(int)));
-           // zmq::message_t *reply = nullptr;
-            dispatch(static_cast<FmiFunctionNames>(t),std::string(static_cast<char*>(update.data()) + sizeof(int), update.size()-+sizeof(int)));
+            char msg_type =*static_cast<char*>(update.data());
+
+            dispatch(static_cast<FmiFunctionNames>(msg_type),std::string(static_cast<char*>(update.data()) + sizeof(char), update.size()-+sizeof(char)));
            
         }
     }

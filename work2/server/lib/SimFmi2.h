@@ -8,7 +8,7 @@
 #include "fmi2.h"
 #include <string>
 #include "unzip.h"
-
+#include <memory>
 
 
 class Fmi2Comp {

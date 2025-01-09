@@ -19,7 +19,7 @@ include(FetchContent)
 FetchContent_Declare(
         zeromq
         GIT_REPOSITORY https://github.com/zeromq/libzmq.git
-        GIT_TAG v4.3.4  # You can choose the version you need
+        GIT_TAG v4.3.5  # You can choose the version you need
 
 )
 set(ZeroMQ_BUILD_STATIC ON CACHE INTERNAL "")
@@ -34,7 +34,7 @@ set(ZMQ_BUILD_TESTS OFF CACHE INTERNAL "")
 FetchContent_Declare(
         cppzmq
         GIT_REPOSITORY https://github.com/zeromq/cppzmq.git
-        GIT_TAG master  # Or specify a version
+        GIT_TAG v4.10.0  # Or specify a version
 
 )
 

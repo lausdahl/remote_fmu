@@ -27,6 +27,7 @@ add_definitions(
         -DCUSTOM_GetIntegerStatus
         -DCUSTOM_GetBooleanStatus
         -DCUSTOM_GetStringStatus
+        -DCUSTOM_GetString
        # -DFMI_REMOTE_RECORD_EXEC_START\(name\)=record_exec_start\(FmiFunctionNames::name\)\;
 )
 

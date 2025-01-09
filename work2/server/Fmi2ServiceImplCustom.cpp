@@ -33,7 +33,7 @@ Status Fmi2ServiceImpl::SetDebugLogging(ServerContext *context, const SetDebugLo
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -45,7 +45,7 @@ Status Fmi2ServiceImpl::SetDebugLogging(ServerContext *context, const SetDebugLo
 
     reply->set_ret(fmi2StatusToAnon_enum0(
         component->fmu->setDebugLogging(component->comp, request->loggingon(), request->categories().size(), values)));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -76,7 +76,7 @@ Status Fmi2ServiceImpl::Instantiate(ServerContext *context, const InstantiateReq
         cout << "Requested GUID " << guid << " not found" << endl;
         reply->set_ret(0);
     }
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -87,7 +87,7 @@ Status Fmi2ServiceImpl::SetString(ServerContext *context, const SetStringRequest
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -103,22 +103,34 @@ Status Fmi2ServiceImpl::SetString(ServerContext *context, const SetStringRequest
     }
     auto status = component->fmu->setString(component->comp, vr, vr_size, values);
     reply->set_ret(fmi2StatusToAnon_enum0(status));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
 void showStatistics(FmiExecInfo executions[]) {
-    std::cout<< std::left<< std::setw(50) <<  "EXECUTION STATISTICS"  << std::setw(10)<<"Count"<< std::setw(20)<<"Duration(ns)"<< std::setw(20)<<"Duration(ms)"<< std::setw(20)<<"Duration(s)"<<std::endl;
+    std::cout << std::left << std::setw(50) << "EXECUTION STATISTICS" << std::setw(10) << "Count" << std::setw(20) <<
+            "Duration(ns)" << std::setw(20) << "Duration(ms)" << std::setw(20) << "Duration(s)" << std::endl;
     int total_count = 0;
     std::chrono::duration<double> total_duration = std::chrono::duration<double>::zero();
-    for(int i = 0 ; i<FMI_FUNCTION_COUNT;i++) {
-        std::cout << std::left << std::setw(50) << FmiFunctionNamesStr[i]  << std::setw(10)<< executions[i].count<< std::setw(20)<<std::chrono::duration_cast<std::chrono::nanoseconds>(executions[i].duration).count()<< std::setw(20)<<std::chrono::duration_cast<std::chrono::milliseconds>(executions[i].duration).count()<< std::setw(20)<<std::chrono::duration_cast<std::chrono::seconds>(executions[i].duration).count()<< std::endl;
-total_count += executions[i].count;
+    for (int i = 0; i < FMI_FUNCTION_COUNT; i++) {
+        std::cout << std::left << std::setw(50) << FmiFunctionNamesStr[i] << std::setw(10) << executions[i].count <<
+                std::setw(20) << std::chrono::duration_cast<std::chrono::nanoseconds>(executions[i].duration).count() <<
+                std::setw(20) << std::chrono::duration_cast<std::chrono::milliseconds>(executions[i].duration).count()
+                << std::setw(20) << std::chrono::duration_cast<std::chrono::seconds>(executions[i].duration).count() <<
+                std::endl;
+        total_count += executions[i].count;
         total_duration += executions[i].duration;
     }
 
-    std::cout << std::left << std::setw(50) << "Total"  << std::setw(10)<< total_count<< std::setw(20)<<std::chrono::duration_cast<std::chrono::nanoseconds>(total_duration).count()<< std::setw(20)<<std::chrono::duration_cast<std::chrono::milliseconds>(total_duration).count()<< std::setw(20)<<std::chrono::duration_cast<std::chrono::seconds>(total_duration).count()<< std::endl;
-    std::cout << std::left << std::setw(50) << "Avg"  << std::setw(10)<< "1"<< std::setw(20)<<std::chrono::duration_cast<std::chrono::nanoseconds>(total_duration).count()/(double)total_count<< std::setw(20)<<std::chrono::duration_cast<std::chrono::milliseconds>(total_duration).count()/(double)total_count<< std::setw(20)<<std::chrono::duration_cast<std::chrono::seconds>(total_duration).count()/(double)total_count<< std::endl;
+    std::cout << std::left << std::setw(50) << "Total" << std::setw(10) << total_count << std::setw(20) <<
+            std::chrono::duration_cast<std::chrono::nanoseconds>(total_duration).count() << std::setw(20) <<
+            std::chrono::duration_cast<std::chrono::milliseconds>(total_duration).count() << std::setw(20) <<
+            std::chrono::duration_cast<std::chrono::seconds>(total_duration).count() << std::endl;
+    std::cout << std::left << std::setw(50) << "Avg" << std::setw(10) << "1" << std::setw(20) <<
+            std::chrono::duration_cast<std::chrono::nanoseconds>(total_duration).count() / (double) total_count <<
+            std::setw(20) << std::chrono::duration_cast<std::chrono::milliseconds>(total_duration).count() / (double)
+            total_count << std::setw(20) << std::chrono::duration_cast<std::chrono::seconds>(total_duration).count() / (
+                double) total_count << std::endl;
 }
 
 Status Fmi2ServiceImpl::FreeInstance(ServerContext *context, const FreeInstanceRequest *request,
@@ -126,14 +138,14 @@ Status Fmi2ServiceImpl::FreeInstance(ServerContext *context, const FreeInstanceR
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(FreeInstance)
     auto component = getComponent(request->c());
     if (component == nullptr) {
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
     component->fmu->freeInstance(component->comp);
 
     showStatistics(this->fmi_function_executions);
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -142,7 +154,7 @@ Status Fmi2ServiceImpl::GetFMUstate(ServerContext *context, const GetFMUstateReq
                                     GetFMUstateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -150,7 +162,7 @@ Status Fmi2ServiceImpl::SetFMUstate(ServerContext *context, const SetFMUstateReq
                                     Fmi2StatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SetFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -158,7 +170,7 @@ Status Fmi2ServiceImpl::FreeFMUstate(ServerContext *context, const FreeFMUstateR
                                      FreeFMUstateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(FreeFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -166,7 +178,7 @@ Status Fmi2ServiceImpl::SerializedFMUstateSize(ServerContext *context, const Ser
                                                SerializedFMUstateSizeResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SerializedFMUstateSize)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -174,7 +186,7 @@ Status Fmi2ServiceImpl::SerializeFMUstate(ServerContext *context, const Serializ
                                           SerializeFMUstateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SerializeFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -182,7 +194,7 @@ Status Fmi2ServiceImpl::DeSerializeFMUstate(ServerContext *context, const DeSeri
                                             DeSerializeFMUstateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(DeSerializeFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -193,7 +205,7 @@ Status Fmi2ServiceImpl::GetDirectionalDerivative(ServerContext *context, const G
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -207,7 +219,7 @@ Status Fmi2ServiceImpl::GetDirectionalDerivative(ServerContext *context, const G
         component->comp, vunknown_ref, vknown_ref_size, vknown_ref, vknown_ref_size, dvknown, dvUnknown)));
 
     GRPC_REPLY_FROM_FMI_ARRAY(dvUnknown, dvknown_size, dvunknown)
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -216,24 +228,23 @@ Status Fmi2ServiceImpl::NewDiscreteStates(ServerContext *context, const NewDiscr
                                           NewDiscreteStatesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(NewDiscreteStates)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
 Status Fmi2ServiceImpl::CompletedIntegratorStep(ServerContext *context, const CompletedIntegratorStepRequest *request,
                                                 CompletedIntegratorStepResponse *reply) {
-   auto start_record = FMI_REMOTE_RECORD_EXEC_START(CompletedIntegratorStep)
+    auto start_record = FMI_REMOTE_RECORD_EXEC_START(CompletedIntegratorStep)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
 Status Fmi2ServiceImpl::SetContinuousStates(ServerContext *context, const SetContinuousStatesRequest *request,
                                             Fmi2StatusResponse *reply) {
-
-     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SetContinuousStates)
+    auto start_record = FMI_REMOTE_RECORD_EXEC_START(SetContinuousStates)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -259,16 +270,16 @@ Status Fmi2ServiceImpl::GetDerivatives(ServerContext *context, const GetDerivati
                                        GetDerivativesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetDerivatives)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
 
 Status Fmi2ServiceImpl::GetEventIndicators(ServerContext *context, const GetEventIndicatorsRequest *request,
                                            GetEventIndicatorsResponse *reply) {
-     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetEventIndicators)
+    auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetEventIndicators)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -277,7 +288,7 @@ Status Fmi2ServiceImpl::GetContinuousStates(ServerContext *context, const GetCon
                                             GetContinuousStatesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetContinuousStates)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -286,7 +297,7 @@ Status Fmi2ServiceImpl::GetNominalsOfContinuousStates(ServerContext *context,
                                                       GetNominalsOfContinuousStatesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetNominalsOfContinuousStates)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -297,7 +308,7 @@ Status Fmi2ServiceImpl::SetRealInputDerivatives(ServerContext *context, const Se
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -309,18 +320,18 @@ Status Fmi2ServiceImpl::SetRealInputDerivatives(ServerContext *context, const Se
         component->fmu->setRealInputDerivatives(component->comp, vr, vr_size, order,
                                                 value)));
 
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
 
 Status Fmi2ServiceImpl::GetRealOutputDerivatives(ServerContext *context, const GetRealOutputDerivativesRequest *request,
                                                  GetRealOutputDerivativesResponse *reply) {
-      auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetRealOutputDerivatives)
+    auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetRealOutputDerivatives)
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -333,18 +344,17 @@ Status Fmi2ServiceImpl::GetRealOutputDerivatives(ServerContext *context, const G
         component->fmu->getRealOutputDerivatives(component->comp, vr, vr_size, order, value)));
 
     GRPC_REPLY_FROM_FMI_ARRAY(value, vr_size, value)
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
 
 Status Fmi2ServiceImpl::GetStatus(ServerContext *context, const GetStatusRequest *request, GetStatusResponse *reply) {
-
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetStatus)
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
     fmi2Status status = fmi2Fatal;
@@ -353,18 +363,18 @@ Status Fmi2ServiceImpl::GetStatus(ServerContext *context, const GetStatusRequest
         fmi2StatusToAnon_enum0(
             component->fmu->getStatus(component->comp, Anon_enum2Tofmi2StatusKind(request->s()), &status)));
 
-     reply->set_value(fmi2StatusToAnon_enum0(status));
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    reply->set_value(fmi2StatusToAnon_enum0(status));
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
 Status Fmi2ServiceImpl::GetRealStatus(ServerContext *context, const GetRealStatusRequest *request,
                                       GetRealStatusResponse *reply) {
-   auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetRealStatus)
+    auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetRealStatus)
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -372,20 +382,20 @@ Status Fmi2ServiceImpl::GetRealStatus(ServerContext *context, const GetRealStatu
     reply->set_ret(
         fmi2StatusToAnon_enum0(
             component->fmu->getRealStatus(component->comp, Anon_enum2Tofmi2StatusKind(request->s()), &value)));
-reply->set_value(0,value);
+    reply->set_value(0, value);
 
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
 
 Status Fmi2ServiceImpl::GetIntegerStatus(ServerContext *context, const GetIntegerStatusRequest *request,
                                          GetIntegerStatusResponse *reply) {
-      auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetIntegerStatus)
+    auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetIntegerStatus)
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -393,9 +403,9 @@ Status Fmi2ServiceImpl::GetIntegerStatus(ServerContext *context, const GetIntege
     reply->set_ret(
         fmi2StatusToAnon_enum0(
             component->fmu->getIntegerStatus(component->comp, Anon_enum2Tofmi2StatusKind(request->s()), &value)));
-    reply->set_value(0,value);
+    reply->set_value(0, value);
 
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -406,7 +416,7 @@ Status Fmi2ServiceImpl::GetBooleanStatus(ServerContext *context, const GetBoolea
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -414,10 +424,10 @@ Status Fmi2ServiceImpl::GetBooleanStatus(ServerContext *context, const GetBoolea
     reply->set_ret(
         fmi2StatusToAnon_enum0(
             component->fmu->getBooleanStatus(component->comp, Anon_enum2Tofmi2StatusKind(request->s()), &value)));
-    reply->set_value(0,value);
+    reply->set_value(0, value);
 
 
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
     return Status::OK;
 }
 
@@ -428,7 +438,7 @@ Status Fmi2ServiceImpl::GetStringStatus(ServerContext *context, const GetStringS
     auto component = getComponent(request->c());
     if (component == nullptr) {
         reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
-        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+        FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
         return Status::OK;
     }
 
@@ -436,8 +446,34 @@ Status Fmi2ServiceImpl::GetStringStatus(ServerContext *context, const GetStringS
     reply->set_ret(
         fmi2StatusToAnon_enum0(
             component->fmu->getStringStatus(component->comp, Anon_enum2Tofmi2StatusKind(request->s()), &value)));
-    reply->set_value(0,std::string(value));
+    reply->set_value(0, std::string(value));
 
-    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment,start_record);
+    FMI_REMOTE_RECORD_EXEC_END(SetupExperiment, start_record);
+    return Status::OK;
+}
+
+
+Status Fmi2ServiceImpl::GetString(ServerContext *context, const GetStringRequest *request, GetStringResponse *reply) {
+    auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetString)
+
+    auto component = getComponent(request->c());
+    if (component == nullptr) {
+        reply->set_ret(fmi2StatusToAnon_enum0(fmi2Error));
+        FMI_REMOTE_RECORD_EXEC_END(GetString, start_record);
+        return Status::OK;
+    }
+
+    GRPC_TO_FMI_ARRAY(fmi2ValueReference, vr, request->vr())
+    GRPC_DECLARE_FMI_ARRAY(fmi2String, value, vr_size)
+    auto status = component->fmu->getString(component->comp, vr, vr_size, value);
+    reply->set_ret(
+        fmi2StatusToAnon_enum0(status));
+    if (status == fmi2OK) {
+        for (int i = 0; i < vr_size; i++) {
+            reply->add_value(value[i]);
+        }
+    }
+
+    FMI_REMOTE_RECORD_EXEC_END(GetString, start_record);
     return Status::OK;
 }

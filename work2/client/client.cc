@@ -8,9 +8,11 @@
 #include <stdlib.h>
 #include "fmi2Functions.h"
 #include "fmi_metrics.h"
+#include <stdarg.h>
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
+
 #ifndef FMI2_H
 #define FMI2_H
 

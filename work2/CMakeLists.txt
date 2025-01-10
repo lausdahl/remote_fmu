@@ -7,7 +7,7 @@ project(my_project C CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 # Add the directory containing CMake package configurations
-set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../grpc-install/lib/cmake" ${CMAKE_PREFIX_PATH})
+set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../protobuf-install/lib/cmake" ${CMAKE_PREFIX_PATH})
 
 
 

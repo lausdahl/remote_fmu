@@ -30,4 +30,5 @@ set_target_properties(fmi2_proto PROPERTIES POSITION_INDEPENDENT_CODE ON)
 #
 #get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 protobuf_generate(TARGET fmi2_proto LANGUAGE cpp)
+set_target_properties(fmi2_proto PROPERTIES POSITION_INDEPENDENT_CODE ON)
 #protobuf_generate(TARGET fmi2_proto LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}")

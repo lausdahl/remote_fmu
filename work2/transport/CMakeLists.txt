@@ -60,6 +60,8 @@ target_link_libraries(zmq_server_transport fmi2_proto  cppzmq libzmq-static fmi)
 target_include_directories(zmq_server_transport PUBLIC ${ZMQ_INCLUDE_DIRS} ${cppzmq_SOURCE_DIR})
 target_include_directories(zmq_server_transport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
+set_target_properties(zmq_server_transport PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(zmq_client_transport PROPERTIES POSITION_INDEPENDENT_CODE ON)
 # Optional: Compiler settings
 #set_target_properties(server client PROPERTIES
 #        CXX_STANDARD 17

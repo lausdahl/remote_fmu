@@ -6,7 +6,6 @@
 #include <fstream>
 #include <rapidjson/istreamwrapper.h>
 #include <uri.h>
-#include <grpcpp/grpcpp.h>
 #include "execution_statistics.h"
 #include "Fmi2ZmqClientTransport.h"
 namespace fs = std::filesystem;

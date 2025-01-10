@@ -35,11 +35,11 @@ add_definitions( -DCUSTOM_Instantiate
         -DCUSTOM_GetStringStatus
         -DCUSTOM_FreeInstance
         -DFMI_COSIMULATION)
-add_executable(client  client.cc custom_client.cpp client_fmi.cxx execution_statistics.cpp establish_remote_connection.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../grpc_fmi_enums.cxx ${PROTO_SRCS} ${GRPC_SRCS})
-target_link_libraries(client fmi2_proto fmi zmq_client_transport)
-target_precompile_headers(client PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/fmi_metrics.h)
-target_include_directories(client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ ${rapidjson_SOURCE_DIR}/include)
-target_compile_definitions(client PRIVATE -DCOMMUNICATION_STUB_TYPE=Fmi2Service::Stub)
+#add_executable(client  client.cc custom_client.cpp client_fmi.cxx execution_statistics.cpp establish_remote_connection.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../grpc_fmi_enums.cxx ${PROTO_SRCS} ${GRPC_SRCS})
+#target_link_libraries(client fmi2_proto fmi zmq_client_transport)
+#target_precompile_headers(client PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/fmi_metrics.h)
+#target_include_directories(client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ ${rapidjson_SOURCE_DIR}/include)
+#target_compile_definitions(client PRIVATE -DCOMMUNICATION_STUB_TYPE=Fmi2Service::Stub)
 
 add_executable(client_zmq  client.cc custom_client.cpp client_fmi.cxx execution_statistics.cpp establish_remote_connection_zmq.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../grpc_fmi_enums.cxx ${PROTO_SRCS} ${GRPC_SRCS})
 target_link_libraries(client_zmq fmi2_proto fmi zmq_client_transport)

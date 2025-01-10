@@ -1,0 +1,93 @@
+.DS_Store
+.venv
+.cmake
+_deps
+fmi_cache
+arch.c
+*.zip
+*.fmu
+fmi2.pb.h
+fmi2.pb.cc
+options-pinned.h
+
+# grep open main2.py | sed 's|.*/||g' |sed 's|\".*||g'
+fmi2.proto
+grpc_fmi_enums.cxx
+grpc_fmi_enums.h
+Fmi2Service.h
+client_fmi.cxx
+Fmi2ServiceImpl.h
+Fmi2ServiceImpl.cpp
+Fmi2ZmqClientTransport.h
+Fmi2ZmqServerTransport.h
+Fmi2ZmqServerTransport.cpp
+
+
+
+
+
+*.dylib
+*.a
+
+# General build artifacts
+build/
+Build/
+BUILD/
+bld/
+out/
+bin/
+obj/
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.app
+*.dSYM/
+*.pdb
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+Makefile
+compile_commands.json
+CMakeUserPresets.json
+
+# Ninja files
+*.ninja
+.ninja_log
+.ninja_deps
+rules.ninja
+
+# IDE and editor files
+.idea/
+.vscode/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# Debugging files
+gmon.out
+vgcore.*
+core
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.bak
+*.~*
+
+# Dependency manager artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated documentation
+docs/_build/

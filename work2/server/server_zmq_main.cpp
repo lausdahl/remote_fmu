@@ -3,22 +3,13 @@
 #include <SimFmi2.h>
 #include <string>
 #include <utility>
-
-#include <grpcpp/grpcpp.h>
-#include "fmi2.grpc.pb.h"
-#include <iostream>
-#include <string>
+#include "fmi2.pb.h"
 #include <vector>
 #include <regex>
 #include <unordered_map>
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::Status;
-
 #include "Fmi2ZmqServerTransport.h"
-
 #include "Fmi2ServiceImpl.h"
+
 
 int fmi_function_executions[FMI_FUNCTION_COUNT];
 
@@ -72,36 +63,17 @@ void parseArguments(int argc, char *argv[], std::string &port, std::vector<Argum
     if (!portSet) {
         //std::cerr << "Error: --port argument is required.\n";
         //exit(EXIT_FAILURE);
-        port="50051";
+        port = "50051";
     }
 }
 
 void RunServer(const std::string &port, std::map<std::string, std::shared_ptr<Fmi2Impl> > allowed_fmus) {
-    std::string server_address(std::string("tcp://localhost:")+port);
+    std::string server_address(std::string("tcp://*:") + port);
     Fmi2ServiceImpl service(std::move(allowed_fmus));
 
-    // ServerBuilder builder;
-    // builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-
-auto server=    Fmi2ZmqServerTransport(server_address);
+    auto server = Fmi2ZmqServerTransport(server_address);
     server.RegisterService(&service);
     server.Start();
-
-    // // Optimize thread pool
-    // builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::NUM_CQS, 2); // Two Completion Queues
-    // builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, 4);
-    // builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, 8);
-    //
-    // builder.AddChannelArgument(GRPC_ARG_HTTP2_MAX_PINGS_WITHOUT_DATA, 0);
-    // builder.AddChannelArgument(GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS, 10000);
-    // builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIME_MS, 10000);
-    // builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 5000);
-    //
-    //
-    // std::unique_ptr<Server> server(builder.BuildAndStart());
-    // std::cout << "Server listening on " << server_address << std::endl;
-    //
-    // server->Wait();
 }
 
 int main(int argc, char **argv) {
@@ -110,28 +82,29 @@ int main(int argc, char **argv) {
 
     parseArguments(argc, argv, port, fmus);
 
-    std::cout << "Listening on port: " << port << "\n";
+    std::cout << "Starting server with port: " << port << "\n\n";
 
     std::map<std::string, std::shared_ptr<Fmi2Impl> > allowed_fmus;
-    allowed_fmus["{12345678-9999-9999-9999-000000000000}"] = load_FMI2("{12345678-9999-9999-9999-000000000000}",
-                                                                       "fmi2functiontest.fmu");
+    // allowed_fmus["{12345678-9999-9999-9999-000000000000}"] = load_FMI2("{12345678-9999-9999-9999-000000000000}",
+    //                                                                    "fmi2functiontest.fmu");
 
     // allowed_fmus["{8c4e810f-3df3-4a00-8276-176fa3c9f000}"] = load_FMI2("{8c4e810f-3df3-4a00-8276-176fa3c9f000}",
     //                                                                   "/Users/kel/data/au/into-cps-association/maestro/maestro/src/test/resources/watertankcontroller-c.fmu");
 
-    if (fmus.size() != 0) {
+    if (!fmus.empty()) {
         allowed_fmus.clear();
     }
 
+
     for (size_t i = 0; i < fmus.size(); ++i) {
-        std::cout << "Tuple " << i + 1 << ":\n";
+        std::cout << "Loading FMU" << i + 1 << ":\n";
         std::cout << "  Path: " << fmus[i].path << "\n";
         std::cout << "  GUID: " << fmus[i].guid << "\n";
         allowed_fmus[fmus[i].guid] = load_FMI2(fmus[i].guid.c_str(),
                                                fmus[i].path.c_str());
     }
 
-
-    RunServer(port,allowed_fmus);
+    std::cout << "\n\n";
+    RunServer(port, allowed_fmus);
     return EXIT_SUCCESS;
 }

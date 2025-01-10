@@ -78,7 +78,7 @@ std::shared_ptr<Fmi2Impl> load_FMI2(const char *guid, const char *in_path) {
     fs::create_directory(fmuDest);
 
 
-    std::cout << "Unpacked fmu " << path << " to " << fmuDest << std::endl;
+   // std::cout << "Unpacked fmu " << path << " to " << fmuDest << std::endl;
 
     unzip(path, fmuDest.u8string().c_str());
 
@@ -112,7 +112,7 @@ std::shared_ptr<Fmi2Impl> load_FMI2(const char *guid, const char *in_path) {
       //  std::string firstFile;
       bool modelLibFound = false;
       for (const auto &entry : fs::directory_iterator(library_base)) {
-          std::cout << entry.path() << std::endl;
+         // std::cout << entry.path() << std::endl;
           fmu->library_path = entry.path().u8string();
           if (hasEnding(fmu->library_path, extension)) {
               modelLibFound = true;
@@ -125,7 +125,7 @@ std::shared_ptr<Fmi2Impl> load_FMI2(const char *guid, const char *in_path) {
         std::cerr  << "FMU does not contain any suitable library. Cannot load it. " << path << std::endl;
         return nullptr;
     }
-    std::cout << "Loading library: "<< fmu->library_path << std::endl;
+   // std::cout << "Loading library: "<< fmu->library_path << std::endl;
 
     fmu->guid = guid;
     auto success = loadDll(fmu->library_path.c_str(), &fmu->fmu);
@@ -139,7 +139,7 @@ std::shared_ptr<Fmi2Impl> load_FMI2(const char *guid, const char *in_path) {
     auto t2 = std::chrono::high_resolution_clock::now();
 
     auto dur = t2 - t1;
-    std::cout << "Load in nanoseconds: {" << duration_cast<nanoseconds>(dur).count() << "}" << std::endl;
+   // std::cout << "Load in nanoseconds: {" << duration_cast<nanoseconds>(dur).count() << "}" << std::endl;
 
     if (!success)
         return nullptr;

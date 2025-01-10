@@ -16,7 +16,9 @@ struct FmiExecInfo {
 };
 
 void showFmiExecutionStatistics();
+
 void showStatistics(FmiExecInfo executions[]);
-extern bool g_show_statistics ;
+
+extern bool g_show_statistics;
 extern FmiExecInfo fmi_function_executions[FMI_FUNCTION_COUNT];
 #endif //CUSTOM_STATISTICS_H

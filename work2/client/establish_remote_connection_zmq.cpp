@@ -5,17 +5,16 @@
 #include <rapidjson/document.h>
 #include <fstream>
 #include <rapidjson/istreamwrapper.h>
-#include "fmi2.grpc.pb.h"
 #include <uri.h>
 #include <grpcpp/grpcpp.h>
 #include "execution_statistics.h"
 #include "Fmi2ZmqClientTransport.h"
 namespace fs = std::filesystem;
 std::unique_ptr<COMMUNICATION_STUB_TYPE> stub_;
-const char * remote_url;
+const char *remote_url;
 
 
-void establish_remote_connection(const std::string &fmuResourceLocation) {
+void establish_remote_connection(fmi2String instanceName,const std::string &fmuResourceLocation,const fmi2CallbackFunctions *functions) {
     fs::path basePath = URIToNativePath(fmuResourceLocation.c_str());
     auto config = basePath / "remote-config.json";
     if (fs::exists(config)) {
@@ -30,7 +29,6 @@ void establish_remote_connection(const std::string &fmuResourceLocation) {
         string url = "";
 
 
-
         if (d.IsObject()) {
             if (d.HasMember("RemoteConnection") && d["RemoteConnection"].IsObject()) {
                 auto connectionObj = d["RemoteConnection"].GetObject();
@@ -41,35 +39,29 @@ void establish_remote_connection(const std::string &fmuResourceLocation) {
                     cout << "No remote connection found" << endl;
                 }
 
-                if (connectionObj.HasMember("ShowStatistics") && connectionObj["ShowStatistics"].IsBool() && connectionObj["ShowStatistics"].GetBool()) {
-                    g_show_statistics=true;
+                if (connectionObj.HasMember("ShowStatistics") && connectionObj["ShowStatistics"].IsBool() &&
+                    connectionObj["ShowStatistics"].GetBool()) {
+                    g_show_statistics = true;
                 }
             }
         }
 
 
         if (url.empty()) {
-            cout << "Could not make connection" << endl;
+            functions->logger(nullptr, instanceName, fmi2OK, "fmi2Error", "Could not make connection no url found");
         } else {
             remote_url = strdup(url.c_str());
 
-
-
-
             // Create ZMQ Context
-               auto  context = new zmq::context_t ( 1 );
+            auto context = new zmq::context_t(1);
             // Create the Subscribe socket
-            zmq::socket_t* socket = new  zmq::socket_t( *context, zmq::socket_type::req );
+            zmq::socket_t *socket = new zmq::socket_t(*context, zmq::socket_type::req);
             // Connect to a tcp socket
-            socket->connect( url.c_str() );
-            cout << "Establishing connection to remote endpoint at URL: " << url << endl;
-            // Set the socket option to subscribe
-            // socket->setsockopt( ZMQ_SUBSCRIBE, "", 0 );
-
-
+            socket->connect(url.c_str());
+            functions->logger(nullptr, instanceName, fmi2OK, "fmi2Info", "Establishing connection to remote endpoint at URL %s",url.c_str());
             stub_ = make_unique<Fmi2ZmqClientTransport>(socket);
         }
     } else {
-        std::cerr << "Could not find remote config at " << config << std::endl;
+        functions->logger(nullptr, instanceName, fmi2Error, "fmi2Info", "Could not find remote config at %s",config.c_str());
     }
 }

@@ -416,7 +416,7 @@ with open("work2/grpc_fmi_enums.cxx", "w") as file:
         file_h.write(header)
         file_h.write("#ifndef GRPC_FMI_ENUMS\n")
         file_h.write("#define GRPC_FMI_ENUMS\n")
-        file_h.write('#include "fmi2.grpc.pb.h"\n')
+        file_h.write('#include "fmi2.pb.h"\n')
         file_h.write('#include "fmi2Functions.h"\n')
         file_h.write('#include "grpc_fmi_enums.h"\n')
 
@@ -430,9 +430,38 @@ public:
         file_h.write(";\n".join(signatures)+';\n')
         file_h.write("#endif\n")
 
+with open("work2/proto/Fmi2Service.h", "w") as file:
+    file.write(header)
+    file.write('#include "fmi2.pb.h"\n')
+
+    file.write('#include "Status.h"\n')
+    file.write("""#ifndef FMI_FMI2SERVICE_H
+#define FMI_FMI2SERVICE_H
+
+""")
+
+
+    file.write("""class Fmi2Service{
+    public: 
+        class Service{
+            public:
+                 virtual ~Service() = default;
+    """)
+
+    for f in functions:
+        request_name = f.name + "Request"
+        response_name = use_common_response(f)
+
+        #        rpc_recipie += "   rpc " + f.name + "(" + request_name + ") returns (" + response_name + ") {}\n"
+
+        file.write(
+            f"\n\t\t\t\t virtual ::rfmu::Status {f.name}(const ::{request_name}* request, ::{response_name}* response) = 0;")
+
+    file.write("\t\n};\n};\n#endif //FMI_FMI2SERVICE_H")
 with open("work2/client/client_fmi.cxx", "w") as file:
     file.write(header)
-    file.write('#include "fmi2.grpc.pb.h"\n')
+    file.write('#include "fmi2.pb.h"\n')
+    file.write('#include "Status.h"\n')
     file.write('#include "client_fmi.h"\n')
     file.write('#include "grpc_fmi_enums.h"\n')
     file.write("""#ifndef FMI_REMOTE_RECORD_EXEC_START
@@ -463,8 +492,8 @@ with open("work2/client/client_fmi.cxx", "w") as file:
             definition = definition[:-2]
         definition += ') {\n'
 
-        body="\tClientContext context;\n"
-        body += f"\tauto start_record = FMI_REMOTE_RECORD_EXEC_START({f.name}) ;\n"
+
+        body = f"\tauto start_record = FMI_REMOTE_RECORD_EXEC_START({f.name}) ;\n"
         body += f"\tauto request = {f.name}Request();\n"
         body += f"\tauto response = { use_common_response(f)}();\n"
         body+="\n\t//argument handling\n"
@@ -524,7 +553,7 @@ with open("work2/client/client_fmi.cxx", "w") as file:
             handled_args.append(a)
 
         # and the call
-        body+=f"\tauto status = stub_->{f.name}( &context, request, &response);\n"
+        body+=f"\tauto status = stub_->{f.name}( request, &response);\n"
         body+="\tif (status.ok())\n"
         body+="\t{\n"
 
@@ -610,18 +639,18 @@ with open("work2/client/client_fmi.cxx", "w") as file:
 
 with open("work2/server/Fmi2ServiceImpl.h", "w") as file:
     file.write(header)
-    file.write('#include "fmi2.grpc.pb.h"\n')
+    file.write('#include "fmi2.pb.h"\n')
+    file.write('#include "Status.h"\n')
+    file.write('#include "Fmi2Service.h"\n')
     file.write('#include "fmi2Functions.h"\n')
     file.write("""
 #ifndef FMI2SERVICEIMPL_H
 #define FMI2SERVICEIMPL_H
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::Status;
+
 
 #include "SimFmi2.h"
 #include "grpc_fmi_enums.h"
+using namespace rfmu;
 
 struct FmiExecInfo{
     int count;
@@ -651,11 +680,11 @@ public:
             definition = definition[:-2]
         definition += ') {\n'
 
-        body="\tClientContext context;\n"
+
         body += f"\tauto request = {f.name}Request();\n"
         body += f"\tauto response = { use_common_response(f)}();\n"
         body+="\n\t//argument handling\n"
-        file.write(f"\tStatus {f.name}(ServerContext* context, const {f.name}Request* request, {use_common_response(f)}* reply) override;\n")
+        file.write(f"\tStatus {f.name}(const {f.name}Request* request, {use_common_response(f)}* reply) override;\n")
 
     file.write("private:\n")
     file.write("\tstd::map<std::string, std::shared_ptr<Fmi2Impl> > available_fmus;\n")
@@ -672,13 +701,12 @@ public:
 with open("work2/server/Fmi2ServiceImpl.cpp", "w") as file:
     file.write(header)
     file.write('#include "Fmi2ServiceImpl.h"\n')
+
     file.write('#include "fmi2Functions.h"\n')
     file.write("""
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::Status;
+
 using namespace std;
+
 #ifndef FMI_REMOTE_RECORD_EXEC_START
 // must return a token for use in _END
 #define FMI_REMOTE_RECORD_EXEC_START(name) 0
@@ -713,7 +741,7 @@ shared_ptr<Fmi2Comp> Fmi2ServiceImpl::getComponent(int index) {
         body += f"\tauto request = {f.name}Request();\n"
         body += f"\tauto response = { use_common_response(f)}();\n"
         body+="\n\t//argument handling\n"
-        definition=(f"Status Fmi2ServiceImpl::{f.name}(ServerContext* context, const {f.name}Request* request, {use_common_response(f)}* reply) \n")
+        definition=(f"Status Fmi2ServiceImpl::{f.name}(const {f.name}Request* request, {use_common_response(f)}* reply) \n")
         if not any([n == f.name for n in ["GetReal","GetInteger","GetBoolean","GetString","SetInteger","SetReal","SetBoolean","SetString"]]):
             definition += ("{\n")
             definition += """\tauto start_record = FMI_REMOTE_RECORD_EXEC_START("""+f.name+""")
@@ -731,7 +759,7 @@ shared_ptr<Fmi2Comp> Fmi2ServiceImpl::getComponent(int index) {
 
                 arguments = "," + ",".join(["request->"+a.name.lower()+"()" for a in f.args[1:]]) if len(f.args) > 1 else ""
                 definition += f"\treply->set_ret(fmi2StatusToAnon_enum0(component->fmu->{f.name[0].lower() + f.name[1:]}(component->comp"+arguments+")));\n"
-            definition+="""FMI_REMOTE_RECORD_EXEC_END("""+f.name+""",start_record);"""
+            definition+="""\tFMI_REMOTE_RECORD_EXEC_END("""+f.name+""",start_record);"""
             definition+=("\n\treturn Status::OK;\n")
         else:
             definition += ("{\n")
@@ -785,7 +813,8 @@ shared_ptr<Fmi2Comp> Fmi2ServiceImpl::getComponent(int index) {
 with open("work2/transport/Fmi2ZmqClientTransport.h", "w") as file:
     file.write(header)
     file.write('#include <zmq.hpp>\n')
-    file.write('#include "fmi2.grpc.pb.h"\n\n')
+    file.write('#include "Status.h"\n')
+    file.write('#include "fmi2.pb.h"\n\n')
     file.write("""class Fmi2ZmqClientTransport{
     public: 
         explicit Fmi2ZmqClientTransport(zmq::socket_t* socket): socket(socket){};
@@ -798,14 +827,14 @@ with open("work2/transport/Fmi2ZmqClientTransport.h", "w") as file:
 
 #        rpc_recipie += "   rpc " + f.name + "(" + request_name + ") returns (" + response_name + ") {}\n"
 
-        file.write(f"\n\t\t::grpc::Status {f.name}(::grpc::ClientContext* context, const ::{request_name}& request, ::{response_name}* response){{ return communicate(FmiFunctionNames::{f.name},request, response);}};")
+        file.write(f"\n\t\t::rfmu::Status {f.name}(const ::{request_name}& request, ::{response_name}* response){{ return communicate(FmiFunctionNames::{f.name},request, response);}};")
     file.write("""
     
     private:
         zmq::socket_t* socket;
         
         template <typename T1, typename T2>
-        ::grpc::Status communicate(FmiFunctionNames type, T1 request, T2 response) {
+        ::rfmu::Status communicate(FmiFunctionNames type, T1 request, T2 response) {
             // Function body
           //  google::protobuf::Any any_msg;
           //  any_msg.PackFrom(request);
@@ -821,10 +850,10 @@ with open("work2/transport/Fmi2ZmqClientTransport.h", "w") as file:
             zmq::message_t zmq_response;
         
             if(!socket->recv(zmq_response, zmq::recv_flags::none)) {
-                return ::grpc::Status(::grpc::StatusCode::INTERNAL, "recv failed");
+                return ::rfmu::Status(::rfmu::StatusCode::INTERNAL, "recv failed");
             }
             response->ParseFromString(std::string(static_cast<char*>(zmq_response.data()), zmq_response.size()));
-            return grpc::Status::OK;
+            return rfmu::Status::OK;
         }
     };""")
 
@@ -833,11 +862,12 @@ with open("work2/transport/Fmi2ZmqServerTransport.h", "w") as file:
     file.write(header)
     file.write('#include <zmq.hpp>\n')
     file.write('#include "grpc_fmi_enums.h"\n')
-    file.write('#include "fmi2.grpc.pb.h"\n\n')
+    file.write('#include "Fmi2Service.h"\n')
+    file.write('#include "fmi2.pb.h"\n\n')
     file.write("""class Fmi2ZmqServerTransport{
     public: 
          
-        Fmi2ZmqServerTransport(const std::string& addr_uri): url(addr_uri), running(false),socket(nullptr) {};
+        explicit Fmi2ZmqServerTransport(const std::string& addr_uri): url(addr_uri), running(false),socket(nullptr),service(nullptr) {};
         void Start();
         void RegisterService(Fmi2Service::Service* service){this->service = service;};
     private:
@@ -868,7 +898,7 @@ with open("work2/transport/Fmi2ZmqServerTransport.cpp", "w") as file:
     
     running = true;
     
-    google::protobuf::Any received_any_msg;
+    //google::protobuf::Any received_any_msg;
     std::cout << "Listening on " <<this->url << std::endl;
     
     while(running){
@@ -904,7 +934,7 @@ void Fmi2ZmqServerTransport::dispatch(FmiFunctionNames type, std::string msg){
             request_msg.ParseFromString(msg);
            // msg.UnpackTo(&request_msg);
             {response_name} response_msg;
-            service->{f.name}(nullptr, &request_msg, &response_msg);
+            service->{f.name}(&request_msg, &response_msg);
             
             std::string serialized_data;
             response_msg.SerializeToString(&serialized_data);

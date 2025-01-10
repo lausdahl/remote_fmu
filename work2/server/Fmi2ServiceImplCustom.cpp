@@ -4,29 +4,11 @@
 #include "Fmi2ServiceImpl.h"
 #include "fmi2Functions.h"
 #include "grpc_fmi_mapping.h"
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::Status;
+#include "Status.h"
+using namespace rfmu;
 using namespace std;
 
-// #define GRPC_DECLARE_FMI_ARRAY(fmiType,variableName,size) \
-// fmiType variableName[size];
-//
-// #define GRPC_TO_FMI_ARRAY(fmiType,variableName,grpcVar) \
-// auto variableName##_size = grpcVar.size();\
-// fmiType variableName[variableName##_size];\
-// for (int i = 0; i < variableName##_size; i++) {\
-//     variableName[i] = static_cast<fmiType>(grpcVar[i]);\
-// }
-//
-// #define GRPC_FROM_FMI_ARRAY(variableName,size,grpcSetName)\
-// for (int i = 0; i < size; i++) {\
-//     reply->grpcSetName(variableName[i]);\
-// }
-
-
-Status Fmi2ServiceImpl::SetDebugLogging(ServerContext *context, const SetDebugLoggingRequest *request,
+Status Fmi2ServiceImpl::SetDebugLogging(const SetDebugLoggingRequest *request,
                                         Fmi2StatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SetDebugLogging)
 
@@ -50,7 +32,7 @@ Status Fmi2ServiceImpl::SetDebugLogging(ServerContext *context, const SetDebugLo
 }
 
 
-Status Fmi2ServiceImpl::Instantiate(ServerContext *context, const InstantiateRequest *request,
+Status Fmi2ServiceImpl::Instantiate(const InstantiateRequest *request,
                                     InstantiateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(Instantiate)
     const auto guid = request->fmuguid();
@@ -82,7 +64,7 @@ Status Fmi2ServiceImpl::Instantiate(ServerContext *context, const InstantiateReq
 
 
 //Define CUSTOM_SetString to manually specify an implementation
-Status Fmi2ServiceImpl::SetString(ServerContext *context, const SetStringRequest *request, Fmi2StatusResponse *reply) {
+Status Fmi2ServiceImpl::SetString(const SetStringRequest *request, Fmi2StatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SetString)
     auto component = getComponent(request->c());
     if (component == nullptr) {
@@ -133,7 +115,7 @@ void showStatistics(FmiExecInfo executions[]) {
                 double) total_count << std::endl;
 }
 
-Status Fmi2ServiceImpl::FreeInstance(ServerContext *context, const FreeInstanceRequest *request,
+Status Fmi2ServiceImpl::FreeInstance(const FreeInstanceRequest *request,
                                      FreeInstanceResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(FreeInstance)
     auto component = getComponent(request->c());
@@ -150,7 +132,7 @@ Status Fmi2ServiceImpl::FreeInstance(ServerContext *context, const FreeInstanceR
 }
 
 
-Status Fmi2ServiceImpl::GetFMUstate(ServerContext *context, const GetFMUstateRequest *request,
+Status Fmi2ServiceImpl::GetFMUstate(const GetFMUstateRequest *request,
                                     GetFMUstateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -158,7 +140,7 @@ Status Fmi2ServiceImpl::GetFMUstate(ServerContext *context, const GetFMUstateReq
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::SetFMUstate(ServerContext *context, const SetFMUstateRequest *request,
+Status Fmi2ServiceImpl::SetFMUstate(const SetFMUstateRequest *request,
                                     Fmi2StatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SetFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -166,7 +148,7 @@ Status Fmi2ServiceImpl::SetFMUstate(ServerContext *context, const SetFMUstateReq
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::FreeFMUstate(ServerContext *context, const FreeFMUstateRequest *request,
+Status Fmi2ServiceImpl::FreeFMUstate(const FreeFMUstateRequest *request,
                                      FreeFMUstateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(FreeFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -174,7 +156,7 @@ Status Fmi2ServiceImpl::FreeFMUstate(ServerContext *context, const FreeFMUstateR
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::SerializedFMUstateSize(ServerContext *context, const SerializedFMUstateSizeRequest *request,
+Status Fmi2ServiceImpl::SerializedFMUstateSize(const SerializedFMUstateSizeRequest *request,
                                                SerializedFMUstateSizeResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SerializedFMUstateSize)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -182,7 +164,7 @@ Status Fmi2ServiceImpl::SerializedFMUstateSize(ServerContext *context, const Ser
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::SerializeFMUstate(ServerContext *context, const SerializeFMUstateRequest *request,
+Status Fmi2ServiceImpl::SerializeFMUstate(const SerializeFMUstateRequest *request,
                                           SerializeFMUstateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SerializeFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -190,7 +172,7 @@ Status Fmi2ServiceImpl::SerializeFMUstate(ServerContext *context, const Serializ
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::DeSerializeFMUstate(ServerContext *context, const DeSerializeFMUstateRequest *request,
+Status Fmi2ServiceImpl::DeSerializeFMUstate(const DeSerializeFMUstateRequest *request,
                                             DeSerializeFMUstateResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(DeSerializeFMUstate)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -199,7 +181,7 @@ Status Fmi2ServiceImpl::DeSerializeFMUstate(ServerContext *context, const DeSeri
 }
 
 
-Status Fmi2ServiceImpl::GetDirectionalDerivative(ServerContext *context, const GetDirectionalDerivativeRequest *request,
+Status Fmi2ServiceImpl::GetDirectionalDerivative(const GetDirectionalDerivativeRequest *request,
                                                  GetDirectionalDerivativeResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetDirectionalDerivative)
     auto component = getComponent(request->c());
@@ -224,7 +206,7 @@ Status Fmi2ServiceImpl::GetDirectionalDerivative(ServerContext *context, const G
 }
 
 
-Status Fmi2ServiceImpl::NewDiscreteStates(ServerContext *context, const NewDiscreteStatesRequest *request,
+Status Fmi2ServiceImpl::NewDiscreteStates(const NewDiscreteStatesRequest *request,
                                           NewDiscreteStatesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(NewDiscreteStates)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -232,7 +214,7 @@ Status Fmi2ServiceImpl::NewDiscreteStates(ServerContext *context, const NewDiscr
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::CompletedIntegratorStep(ServerContext *context, const CompletedIntegratorStepRequest *request,
+Status Fmi2ServiceImpl::CompletedIntegratorStep(const CompletedIntegratorStepRequest *request,
                                                 CompletedIntegratorStepResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(CompletedIntegratorStep)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -240,7 +222,7 @@ Status Fmi2ServiceImpl::CompletedIntegratorStep(ServerContext *context, const Co
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::SetContinuousStates(ServerContext *context, const SetContinuousStatesRequest *request,
+Status Fmi2ServiceImpl::SetContinuousStates(const SetContinuousStatesRequest *request,
                                             Fmi2StatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SetContinuousStates)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -266,7 +248,7 @@ typedef fmi2Status fmi2GetNominalsOfContinuousStatesTYPE(fmi2Component, fmi2Real
  */
 
 
-Status Fmi2ServiceImpl::GetDerivatives(ServerContext *context, const GetDerivativesRequest *request,
+Status Fmi2ServiceImpl::GetDerivatives(const GetDerivativesRequest *request,
                                        GetDerivativesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetDerivatives)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -275,7 +257,7 @@ Status Fmi2ServiceImpl::GetDerivatives(ServerContext *context, const GetDerivati
 }
 
 
-Status Fmi2ServiceImpl::GetEventIndicators(ServerContext *context, const GetEventIndicatorsRequest *request,
+Status Fmi2ServiceImpl::GetEventIndicators(const GetEventIndicatorsRequest *request,
                                            GetEventIndicatorsResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetEventIndicators)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -284,7 +266,7 @@ Status Fmi2ServiceImpl::GetEventIndicators(ServerContext *context, const GetEven
 }
 
 
-Status Fmi2ServiceImpl::GetContinuousStates(ServerContext *context, const GetContinuousStatesRequest *request,
+Status Fmi2ServiceImpl::GetContinuousStates(const GetContinuousStatesRequest *request,
                                             GetContinuousStatesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetContinuousStates)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -292,8 +274,7 @@ Status Fmi2ServiceImpl::GetContinuousStates(ServerContext *context, const GetCon
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::GetNominalsOfContinuousStates(ServerContext *context,
-                                                      const GetNominalsOfContinuousStatesRequest *request,
+Status Fmi2ServiceImpl::GetNominalsOfContinuousStates(const GetNominalsOfContinuousStatesRequest *request,
                                                       GetNominalsOfContinuousStatesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetNominalsOfContinuousStates)
     reply->set_ret(fmi2StatusToAnon_enum0(fmi2Discard));
@@ -302,7 +283,7 @@ Status Fmi2ServiceImpl::GetNominalsOfContinuousStates(ServerContext *context,
 }
 
 
-Status Fmi2ServiceImpl::SetRealInputDerivatives(ServerContext *context, const SetRealInputDerivativesRequest *request,
+Status Fmi2ServiceImpl::SetRealInputDerivatives(const SetRealInputDerivativesRequest *request,
                                                 Fmi2StatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(SetRealInputDerivatives)
     auto component = getComponent(request->c());
@@ -325,7 +306,7 @@ Status Fmi2ServiceImpl::SetRealInputDerivatives(ServerContext *context, const Se
 }
 
 
-Status Fmi2ServiceImpl::GetRealOutputDerivatives(ServerContext *context, const GetRealOutputDerivativesRequest *request,
+Status Fmi2ServiceImpl::GetRealOutputDerivatives(const GetRealOutputDerivativesRequest *request,
                                                  GetRealOutputDerivativesResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetRealOutputDerivatives)
     auto component = getComponent(request->c());
@@ -349,7 +330,7 @@ Status Fmi2ServiceImpl::GetRealOutputDerivatives(ServerContext *context, const G
 }
 
 
-Status Fmi2ServiceImpl::GetStatus(ServerContext *context, const GetStatusRequest *request, GetStatusResponse *reply) {
+Status Fmi2ServiceImpl::GetStatus(const GetStatusRequest *request, GetStatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetStatus)
     auto component = getComponent(request->c());
     if (component == nullptr) {
@@ -368,7 +349,7 @@ Status Fmi2ServiceImpl::GetStatus(ServerContext *context, const GetStatusRequest
     return Status::OK;
 }
 
-Status Fmi2ServiceImpl::GetRealStatus(ServerContext *context, const GetRealStatusRequest *request,
+Status Fmi2ServiceImpl::GetRealStatus(const GetRealStatusRequest *request,
                                       GetRealStatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetRealStatus)
     auto component = getComponent(request->c());
@@ -389,7 +370,7 @@ Status Fmi2ServiceImpl::GetRealStatus(ServerContext *context, const GetRealStatu
 }
 
 
-Status Fmi2ServiceImpl::GetIntegerStatus(ServerContext *context, const GetIntegerStatusRequest *request,
+Status Fmi2ServiceImpl::GetIntegerStatus(const GetIntegerStatusRequest *request,
                                          GetIntegerStatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetIntegerStatus)
     auto component = getComponent(request->c());
@@ -410,7 +391,7 @@ Status Fmi2ServiceImpl::GetIntegerStatus(ServerContext *context, const GetIntege
 }
 
 
-Status Fmi2ServiceImpl::GetBooleanStatus(ServerContext *context, const GetBooleanStatusRequest *request,
+Status Fmi2ServiceImpl::GetBooleanStatus(const GetBooleanStatusRequest *request,
                                          GetBooleanStatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetBooleanStatus)
     auto component = getComponent(request->c());
@@ -432,7 +413,7 @@ Status Fmi2ServiceImpl::GetBooleanStatus(ServerContext *context, const GetBoolea
 }
 
 
-Status Fmi2ServiceImpl::GetStringStatus(ServerContext *context, const GetStringStatusRequest *request,
+Status Fmi2ServiceImpl::GetStringStatus(const GetStringStatusRequest *request,
                                         GetStringStatusResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetStringStatus)
     auto component = getComponent(request->c());
@@ -453,7 +434,7 @@ Status Fmi2ServiceImpl::GetStringStatus(ServerContext *context, const GetStringS
 }
 
 
-Status Fmi2ServiceImpl::GetString(ServerContext *context, const GetStringRequest *request, GetStringResponse *reply) {
+Status Fmi2ServiceImpl::GetString(const GetStringRequest *request, GetStringResponse *reply) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetString)
 
     auto component = getComponent(request->c());

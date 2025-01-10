@@ -2,16 +2,14 @@
 #include <string>
 #include <uri.h>
 
-#include <grpcpp/grpcpp.h>
-#include "fmi2.grpc.pb.h"
-#include <stdio.h>
-#include <stdlib.h>
+
+#include "fmi2.pb.h"
+#include <cstdio>
+#include <cstdlib>
 #include "fmi2Functions.h"
 #include "fmi_metrics.h"
-#include <stdarg.h>
-using grpc::Channel;
-using grpc::ClientContext;
-using grpc::Status;
+#include <cstdarg>
+
 
 #ifndef FMI2_H
 #define FMI2_H
@@ -76,8 +74,8 @@ void runFmiSimulation(const char *name, const char *guid, const char *resourcePa
         .logger = fmi2Logger,
         .allocateMemory = calloc,
         .freeMemory = free,
-        .stepFinished = NULL,
-        .componentEnvironment = NULL
+        .stepFinished = nullptr,
+        .componentEnvironment = nullptr
     };
 
     // Load the FMU (assuming a shared library mechanism)

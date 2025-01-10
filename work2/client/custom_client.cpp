@@ -1,5 +1,5 @@
-#include "fmi2.grpc.pb.h"
-
+#include "fmi2.pb.h"
+#include "Status.h"
 #include "client_fmi.h"
 #include <cstring> //memcopy
 #include <grpc_fmi_enums.h>
@@ -7,9 +7,14 @@
 #include "grpc_fmi_mapping.h"
 #include "execution_statistics.h"
 
+extern "C" {
+#include "fmi2.h"
+#include "sim_support.h"
+}
+
 extern std::unique_ptr<COMMUNICATION_STUB_TYPE> stub_;
 extern const char *remote_url;
-using grpc::ClientContext;
+
 
 // ---------------------------------------------------------------------------
 // FMI functions: class methods not depending of a specific model instance
@@ -34,9 +39,9 @@ extern "C" fmi2Component fmi2Instantiate(fmi2String instanceName,
                                          const fmi2CallbackFunctions *functions,
                                          fmi2Boolean visible,
                                          fmi2Boolean loggingOn) {
-    establish_remote_connection(fmuResourceLocation);
+    establish_remote_connection(instanceName,fmuResourceLocation,functions);
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(Instantiate);
-    ClientContext context;
+
 
     auto request = InstantiateRequest();
     auto response = InstantiateResponse();
@@ -50,10 +55,10 @@ extern "C" fmi2Component fmi2Instantiate(fmi2String instanceName,
     request.set_visible(visible);
     request.set_loggingon(loggingOn);
 
-    functions->logger(nullptr, instanceName, fmi2Fatal, "fmi2Info", "Connecting to remote host on  %s using guid %s",
+    functions->logger(nullptr, instanceName, fmi2OK, "fmi2Info", "Connecting to remote host on  %s using guid %s",
                       remote_url, fmuGUID);
 
-    auto status = stub_->Instantiate(&context, request, &response);
+    auto status = stub_->Instantiate(request, &response);
     if (status.ok()) {
         // printf("fmi2Instantiate to grpc: ok\n");
         auto comp = reinterpret_cast<fmi2Component>(response.ret());
@@ -84,9 +89,6 @@ extern "C" fmi2Component fmi2Instantiate(fmi2String instanceName,
 //Define CUSTOM_GetString to manually specify an implementation
 extern "C" fmi2Status fmi2GetString(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetString);
-    ClientContext context;
-
-    context.set_compression_algorithm(GRPC_COMPRESS_GZIP);
 
     auto request = GetStringRequest();
     auto response = GetStringResponse();
@@ -96,7 +98,7 @@ extern "C" fmi2Status fmi2GetString(fmi2Component c, const fmi2ValueReference vr
     for (int i = 0; i < nvr; i++) {
         request.add_vr(vr[i]);
     }
-    auto status = stub_->GetString(&context, request, &response);
+    auto status = stub_->GetString(request, &response);
     if (status.ok()) {
         for (int i = 0; i < nvr && i < response.value_size(); i++) {
             value[i] = strdup(response.value(i).c_str());
@@ -169,7 +171,7 @@ extern "C" fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2Val
 extern "C" fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                                    const fmi2Integer order[], fmi2Real value[]) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetRealOutputDerivatives);
-    ClientContext context;
+
     auto request = GetRealOutputDerivativesRequest();
     auto response = GetRealOutputDerivativesResponse();
 
@@ -179,7 +181,7 @@ extern "C" fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2Va
     GRPC_REQUEST_FROM_FMI_ARRAY(vr, nvr, add_vr);
     GRPC_REQUEST_FROM_FMI_ARRAY(order, nvr, add_order);
 
-    auto status = stub_->GetRealOutputDerivatives(&context, request, &response);
+    auto status = stub_->GetRealOutputDerivatives(request, &response);
     if (status.ok()) {
         GRPC_TO_FMI_ARRAY(fmi2Real, value, response.value())
         FMI_REMOTE_RECORD_EXEC_END(GetRealOutputDerivatives, start_record);
@@ -197,7 +199,7 @@ extern "C" fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2Va
 //Define CUSTOM_GetStatus to manually specify an implementation
 extern "C" fmi2Status fmi2GetStatus(fmi2Component c, fmi2StatusKind s, fmi2Status *value) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetStatus);
-    ClientContext context;
+
     auto request = GetStatusRequest();
     auto response = GetStatusResponse();
 
@@ -205,7 +207,7 @@ extern "C" fmi2Status fmi2GetStatus(fmi2Component c, fmi2StatusKind s, fmi2Statu
     request.set_c(TO_UINT(c));
     request.set_s(fmi2StatusKindToAnon_enum2(s));
 
-    auto status = stub_->GetStatus(&context, request, &response);
+    auto status = stub_->GetStatus(request, &response);
     if (status.ok()) {
         *value = Anon_enum0Tofmi2Status(response.value());
         FMI_REMOTE_RECORD_EXEC_END(GetStatus, start_record);
@@ -223,7 +225,7 @@ extern "C" fmi2Status fmi2GetStatus(fmi2Component c, fmi2StatusKind s, fmi2Statu
 //Define CUSTOM_GetRealStatus to manually specify an implementation
 extern "C" fmi2Status fmi2GetRealStatus(fmi2Component c, fmi2StatusKind s, fmi2Real *value) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetRealStatus);
-    ClientContext context;
+
     auto request = GetRealStatusRequest();
     auto response = GetRealStatusResponse();
 
@@ -231,7 +233,7 @@ extern "C" fmi2Status fmi2GetRealStatus(fmi2Component c, fmi2StatusKind s, fmi2R
     request.set_c(TO_UINT(c));
     request.set_s(fmi2StatusKindToAnon_enum2(s));
 
-    auto status = stub_->GetRealStatus(&context, request, &response);
+    auto status = stub_->GetRealStatus(request, &response);
     if (status.ok()) {
         *value = response.value(0);
         FMI_REMOTE_RECORD_EXEC_END(GetRealStatus, start_record);
@@ -249,7 +251,7 @@ extern "C" fmi2Status fmi2GetRealStatus(fmi2Component c, fmi2StatusKind s, fmi2R
 //Define CUSTOM_GetIntegerStatus to manually specify an implementation
 extern "C" fmi2Status fmi2GetIntegerStatus(fmi2Component c, fmi2StatusKind s, fmi2Integer *value) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetIntegerStatus);
-    ClientContext context;
+
     auto request = GetIntegerStatusRequest();
     auto response = GetIntegerStatusResponse();
 
@@ -257,7 +259,7 @@ extern "C" fmi2Status fmi2GetIntegerStatus(fmi2Component c, fmi2StatusKind s, fm
     request.set_c(TO_UINT(c));
     request.set_s(fmi2StatusKindToAnon_enum2(s));
 
-    auto status = stub_->GetIntegerStatus(&context, request, &response);
+    auto status = stub_->GetIntegerStatus(request, &response);
     if (status.ok()) {
         *value = response.value(0);
         FMI_REMOTE_RECORD_EXEC_END(GetIntegerStatus, start_record);
@@ -275,7 +277,7 @@ extern "C" fmi2Status fmi2GetIntegerStatus(fmi2Component c, fmi2StatusKind s, fm
 //Define CUSTOM_GetBooleanStatus to manually specify an implementation
 extern "C" fmi2Status fmi2GetBooleanStatus(fmi2Component c, fmi2StatusKind s, fmi2Boolean *value) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetBooleanStatus);
-    ClientContext context;
+
     auto request = GetBooleanStatusRequest();
     auto response = GetBooleanStatusResponse();
 
@@ -283,7 +285,7 @@ extern "C" fmi2Status fmi2GetBooleanStatus(fmi2Component c, fmi2StatusKind s, fm
     request.set_c(TO_UINT(c));
     request.set_s(fmi2StatusKindToAnon_enum2(s));
 
-    auto status = stub_->GetBooleanStatus(&context, request, &response);
+    auto status = stub_->GetBooleanStatus(request, &response);
     if (status.ok()) {
         *value = response.value(0);
         FMI_REMOTE_RECORD_EXEC_END(GetBooleanStatus, start_record);
@@ -301,7 +303,7 @@ extern "C" fmi2Status fmi2GetBooleanStatus(fmi2Component c, fmi2StatusKind s, fm
 //Define CUSTOM_GetStringStatus to manually specify an implementation
 extern "C" fmi2Status fmi2GetStringStatus(fmi2Component c, fmi2StatusKind s, fmi2String *value) {
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(GetStringStatus);
-    ClientContext context;
+
     auto request = GetStringStatusRequest();
     auto response = GetStringStatusResponse();
 
@@ -309,7 +311,7 @@ extern "C" fmi2Status fmi2GetStringStatus(fmi2Component c, fmi2StatusKind s, fmi
     request.set_c(TO_UINT(c));
     request.set_s(fmi2StatusKindToAnon_enum2(s));
 
-    auto status = stub_->GetStringStatus(&context, request, &response);
+    auto status = stub_->GetStringStatus(request, &response);
     if (status.ok()) {
         *value = strdup(response.value(0).c_str());
         FMI_REMOTE_RECORD_EXEC_END(GetStringStatus, start_record);
@@ -325,14 +327,13 @@ extern "C" fmi2Status fmi2GetStringStatus(fmi2Component c, fmi2StatusKind s, fmi
 
 
 extern "C" void fmi2FreeInstance(fmi2Component c) {
-    ClientContext context;
     auto start_record = FMI_REMOTE_RECORD_EXEC_START(FreeInstance);
     auto request = FreeInstanceRequest();
     auto response = FreeInstanceResponse();
 
     //argument handling
     request.set_c(static_cast<uint32_t>(reinterpret_cast<std::uintptr_t>(c)));
-    auto status = stub_->FreeInstance(&context, request, &response);
+    auto status = stub_->FreeInstance(request, &response);
     if (status.ok()) {
     } else {
         g_component_env_map.at(c).callback.logger(nullptr, g_component_env_map[c].name.c_str(), fmi2Fatal, "fmi2Error",

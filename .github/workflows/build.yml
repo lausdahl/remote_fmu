@@ -43,7 +43,6 @@ jobs:
 
       - name: upload test reports ubuntu
         uses: actions/upload-artifact@v4
-        if: ${{ failure() && matrix.os == 'ubuntu-22.04' }}
         with:
           name: surfire-ubuntu
           path: |

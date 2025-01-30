@@ -36,7 +36,7 @@ Make sure the original fmu
 
 # Build and test in Docker
 
-First we need to start docker `docker run -i ubuntu:latest` we tested with 22 and 24
+First we need to start docker `docker run -it --rm  ubuntu:24.04./maestro-test.sh /bin/bash` we tested with 22 and 24
 
 ```
 apt update

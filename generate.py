@@ -351,11 +351,11 @@ if 'enums' in parser.defs:
         rpc_recipie += "}\n"
         rpc_recipie += "\n\n"
 
-with open("work2/proto/fmi2.proto", "w") as file:
+with open("src/proto/fmi2.proto", "w") as file:
     file.write(rpc_recipie)
 
 
-with open("work2/grpc_fmi_enums.cxx", "w") as file:
+with open("src/grpc_fmi_enums.cxx", "w") as file:
     # file.write('#include "fmi2.grpc.pb.h"\n')
     # file.write('#include "fmi2Functions.h"\n')
     file.write(header)
@@ -412,7 +412,7 @@ with open("work2/grpc_fmi_enums.cxx", "w") as file:
     fmiFunctions += "};\n"
     file.write(fmiFunctions)
 
-    with open("work2/grpc_fmi_enums.h", "w") as file_h:
+    with open("src/grpc_fmi_enums.h", "w") as file_h:
         file_h.write(header)
         file_h.write("#ifndef GRPC_FMI_ENUMS\n")
         file_h.write("#define GRPC_FMI_ENUMS\n")
@@ -430,7 +430,7 @@ public:
         file_h.write(";\n".join(signatures)+';\n')
         file_h.write("#endif\n")
 
-with open("work2/proto/Fmi2Service.h", "w") as file:
+with open("src/proto/Fmi2Service.h", "w") as file:
     file.write(header)
     file.write('#include "fmi2.pb.h"\n')
 
@@ -458,7 +458,7 @@ with open("work2/proto/Fmi2Service.h", "w") as file:
             f"\n\t\t\t\t virtual ::rfmu::Status {f.name}(const ::{request_name}* request, ::{response_name}* response) = 0;")
 
     file.write("\t\n};\n};\n#endif //FMI_FMI2SERVICE_H")
-with open("work2/client/client_fmi.cxx", "w") as file:
+with open("src/client/client_fmi.cxx", "w") as file:
     file.write(header)
     file.write('#include "fmi2.pb.h"\n')
     file.write('#include "Status.h"\n')
@@ -637,7 +637,7 @@ with open("work2/client/client_fmi.cxx", "w") as file:
         definition=f"#ifndef CUSTOM_{f.name}\n//Define CUSTOM_{f.name} to manually specify an implementation\n"+definition+"#endif\n\n"
         file.write(definition)
 
-with open("work2/server/Fmi2ServiceImpl.h", "w") as file:
+with open("src/server/Fmi2ServiceImpl.h", "w") as file:
     file.write(header)
     file.write('#include "fmi2.pb.h"\n')
     file.write('#include "Status.h"\n')
@@ -698,7 +698,7 @@ public:
     file.write("""\n};\n\n#endif //FMI2SERVICEIMPL_H""")
 
 
-with open("work2/server/Fmi2ServiceImpl.cpp", "w") as file:
+with open("src/server/Fmi2ServiceImpl.cpp", "w") as file:
     file.write(header)
     file.write('#include "Fmi2ServiceImpl.h"\n')
 
@@ -810,7 +810,7 @@ shared_ptr<Fmi2Comp> Fmi2ServiceImpl::getComponent(int index) {
 
 
 
-with open("work2/transport/Fmi2ZmqClientTransport.h", "w") as file:
+with open("src/transport/Fmi2ZmqClientTransport.h", "w") as file:
     file.write(header)
     file.write('#include <zmq.hpp>\n')
     file.write('#include "Status.h"\n')
@@ -858,7 +858,7 @@ with open("work2/transport/Fmi2ZmqClientTransport.h", "w") as file:
     };""")
 
 
-with open("work2/transport/Fmi2ZmqServerTransport.h", "w") as file:
+with open("src/transport/Fmi2ZmqServerTransport.h", "w") as file:
     file.write(header)
     file.write('#include <zmq.hpp>\n')
     file.write('#include "grpc_fmi_enums.h"\n')
@@ -879,7 +879,7 @@ with open("work2/transport/Fmi2ZmqServerTransport.h", "w") as file:
     };
     """)
 
-with open("work2/transport/Fmi2ZmqServerTransport.cpp", "w") as file:
+with open("src/transport/Fmi2ZmqServerTransport.cpp", "w") as file:
     file.write(header)
 
     file.write('#include "Fmi2ZmqServerTransport.h"\n\n')

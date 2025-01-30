@@ -10,9 +10,9 @@ rm -f *.jar*
 
 echo Copying Remote FMU components
 
-cp $repo_root/work2/client/remote_fmu.zip .
+cp $repo_root/src/client/remote_fmu.zip .
 unzip -o  remote_fmu.zip -d remote_fmu
-cp $repo_root/work2/server/server_zmq .
+cp $repo_root/src/server/server_zmq .
 
 
 echo Downloading Maestro and test models
@@ -21,6 +21,7 @@ wget -q  -O maestro.jar https://github.com/INTO-CPS-Association/maestro/releases
 
 wget -q https://raw.githubusercontent.com/INTO-CPS-Association/maestro/refs/heads/development/maestro/src/test/resources/specifications/full/initialize_singleWaterTank/env.json 
 sed -i.bak  's|src/test/resources/||g' env.json
+jq '. + {endTime: 10.0}' env.json > temp.json && mv temp.json env.json
 wget -q https://raw.githubusercontent.com/INTO-CPS-Association/maestro/refs/heads/development/maestro/src/test/resources/specifications/full/initialize_singleWaterTank/config.json 
 
 wget -q https://github.com/INTO-CPS-Association/maestro/raw/refs/heads/development/maestro/src/test/resources/watertankcontroller-c.fmu 
@@ -161,7 +162,14 @@ bg_pid=$!
 
 java -jar maestro.jar import sg1 proxies.json config.json -output simulation --interpret
 
-wait $!
+cleanup() {
+    echo "Closing server..."
+    kill $bg_pid 2>/dev/null
+    wait $bg_pid 2>/dev/null
+}
 
-kill $bg_pid
 
+trap cleanup EXIT
+
+
+exit 0

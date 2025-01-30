@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add the directory containing CMake package configurations
 set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../protobuf-install/lib/cmake" ${CMAKE_PREFIX_PATH})
-
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
 
 add_subdirectory(proto)

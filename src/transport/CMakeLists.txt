@@ -14,7 +14,7 @@ include(FetchContent)
 #)
 #
 #FetchContent_MakeAvailable(cppzmq)
-
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build static library for ZeroMQ" FORCE)
 # Fetch ZeroMQ (for cppzmq)
 FetchContent_Declare(
         zeromq
@@ -51,12 +51,12 @@ FetchContent_MakeAvailable(zeromq cppzmq)
 #message(${ZMQ_LIBRARIES})
 # Create client executable
 add_library(zmq_client_transport INTERFACE)
-target_link_libraries(zmq_client_transport INTERFACE fmi2_proto cppzmq)
+target_link_libraries(zmq_client_transport INTERFACE fmi2_proto cppzmq-static  libzmq-static)
 target_include_directories(zmq_client_transport INTERFACE  ${ZMQ_INCLUDE_DIRS} ${cppzmq_SOURCE_DIR})
 target_include_directories(zmq_client_transport INTERFACE  ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(zmq_server_transport STATIC Fmi2ZmqServerTransport.cpp)
-target_link_libraries(zmq_server_transport fmi2_proto  cppzmq libzmq-static fmi)
+target_link_libraries(zmq_server_transport fmi2_proto  cppzmq-static  libzmq-static fmi)
 target_include_directories(zmq_server_transport PUBLIC ${ZMQ_INCLUDE_DIRS} ${cppzmq_SOURCE_DIR})
 target_include_directories(zmq_server_transport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../)
 

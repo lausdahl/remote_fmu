@@ -20,10 +20,10 @@ cd ..
 fi
 
 echo "Generating the source files from the fmi headers"
-python main2.py
+python generate.py
 
 
-cd work2
+cd src
 cmake .
 make -j$(nproc)
 

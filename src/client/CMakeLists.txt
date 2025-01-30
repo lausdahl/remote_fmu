@@ -70,22 +70,22 @@ foreach(LETTER ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
 endforeach()
 
 message(STATUS "Static linking with libstdc++.a in ${STDCPP_LIBRARY}")
-target_link_libraries(remote_fmu ${STDCPP_LIBRARY})
+#target_link_libraries(remote_fmu ${STDCPP_LIBRARY})
 
 
 #IF(NOT(DEFINED XOSX))
 
-if (UNIX)
-    if(APPLE)
-
-
-        SET(PTHREAD_LIBRARY libpthread.dylib)
-    ELSE()
-        find_library(PTHREAD_LIBRARY NAMES libpthread.a libpthread.dylib)
-
-
-    ENDIF()
-ENDIF()
+#if (UNIX)
+#    if(APPLE)
+#
+#
+#        SET(PTHREAD_LIBRARY libpthread.dylib)
+#    ELSE()
+#        find_library(PTHREAD_LIBRARY NAMES libpthread.a libpthread.dylib)
+#
+#
+#    ENDIF()
+#ENDIF()
 
 #target_link_libraries(${PROJECT_NAME} ${PTHREAD_LIBRARY})
 

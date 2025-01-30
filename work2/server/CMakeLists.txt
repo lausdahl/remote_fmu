@@ -57,6 +57,10 @@ target_precompile_headers(server_zmq PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/fmi_me
 target_link_libraries(server_zmq  fmi zmq_server_transport)
 target_include_directories(server_zmq PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    target_link_libraries(server_zmq dl)
+endif ()
+
 #add_custom_command(
 #        TARGET server
 #        POST_BUILD

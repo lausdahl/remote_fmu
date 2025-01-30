@@ -34,3 +34,18 @@ python3 create_remote_fmu.py --connection_string "tcp://localhost:50051" --desti
 Make sure the original fmu
 
 
+# Build and test in Docker
+
+First we need to start docker `docker run -i ubuntu:latest` we tested with 22 and 24
+
+```
+apt update
+apt install git
+git clone https://github.com/lausdahl/remote_fmu.git
+cd remote_fmu/
+./install-dependencies-linux.sh 
+./build.sh 
+apt install openjdk-11-jdk
+./maestro-test.sh
+
+```

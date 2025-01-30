@@ -116,7 +116,7 @@ bool unzip(const char *path, const char *dest) {
         }
 
 
-        char filePathBuffer[strlen(file_stat.name) + (dest ? strlen(dest) : 0) + 1];
+        char filePathBuffer[strlen(file_stat.name) + (dest ? strlen(dest) : 0) + 1 +1]; //FIXME the buffer is too small temp fix +1 so there is two
         configure_path_buffer(filePathBuffer, dest, file_stat.name);
 
         /* show the user what we're doing */
